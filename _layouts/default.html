@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+{% seo %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-coy.min.css"/>
+    <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+    <script>
+        Prism.languages['kit'] = Prism.languages.extend('clike', {
+          'keyword': /\b(struct|enum|union|abstract|function|implement|specialize|trait|typedef|var|private|public|static|const|inline|using)\b/,
+          'property': /\b(return|throw|for|as|in|if|then|else|do|while|match|default|unsafe|rule|rules|implicit|sizeof|true|false|null)\b/,
+          'tag': /\b(import|include)\b/,
+          'important': /\b[A-Z][a-zA-Z0-9_]*\b/,
+        });
+    </script>
+    <div class="wrapper">
+      <header>
+        <a href="{{site.url}}">
+          <img class="logo" src="{{site.logo | relative_url}}" alt="Logo" />
+        </a>
+
+        <p>{{ site.description }}</p>
+
+        <p class="view">
+          <a href="{{ site.github.repository_url }}"><i class="fab fa-github fa-4x" title="GitHub - {{ site.github.repository_url }}"></i></a>
+          <a href="{{ site.twitter.url }}"><i class="fab fa-twitter fa-4x blue" title="Twitter - {{ site.twitter.url }}"></i></a>
+          <a href="{{ site.gitter.url }}"><i class="fab fa-gitter fa-4x purple" title="Gitter - {{ site.gitter.url }}"></i></a>
+          <a href="{{ site.reddit.url }}"><i class="fab fa-reddit fa-4x red" title="Reddit - {{ site.reddit.url }}"></i></a>
+          <a href="{{ site.trello.url }}"><i class="fab fa-trello fa-4x light-blue" title="Trello - {{ site.trello.url }}"></i></a>
+        </p>
+
+        <p>
+            <hr/>
+            {% include toc.html html=content %}
+        </p>
+      </header>
+      <section>
+
+      {{ content }}
+
+      </section>
+      <footer>
+        <p>Kit &mdash; &copy; 2018 <a href="https://github.com/bendmorris">Ben Morris</a> (<a href="https://github.com/kitlang/kit/blob/master/LICENSE.md">license</a>)</p>
+      </footer>
+    </div>
+    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+    {% if site.google_analytics %}
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      ga('create', '{{ site.google_analytics }}', 'auto');
+      ga('send', 'pageview');
+    </script>
+    {% endif %}
+  </body>
+</html>

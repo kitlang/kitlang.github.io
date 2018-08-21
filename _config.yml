@@ -1,0 +1,15 @@
+title: Kit Programming Language
+logo: /assets/img/logo.png
+description: A <span class="rainbow">magical</span>, high performance programming language for game development.
+theme: jekyll-theme-minimal
+
+github:
+  repository_url: https://github.com/kitlang
+twitter:
+  url: https://twitter.com/kitlanguage
+gitter:
+  url: https://gitter.im/kitlang/kit
+reddit:
+  url: https://reddit.com/r/kitlang
+trello:
+  url: https://trello.com/b/Bn9H0fzk/kit
