@@ -223,22 +223,67 @@ function main() {
 Types
 -----
 
-All types in Kit can define static fields/methods as well as instance methods.
+Types in Kit can define static fields/methods as well as instance methods.
+
+### Numeric types
+
+Numeric types include:
+
+- Signed ints: `Int8` (`Char`), `Int16` (`Short`), `Int32` (`Int`), and `Int64` (`Long`)
+- Unsigned ints: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
+- Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
+
+### Boolean
+
+~~~kit
+var a = true;
+var b = false;
+~~~
+
+### Pointers
+
+A value of type `Ptr[T]` is a pointer to a value of type T. They can be referenced and dereferenced using the `&` and `*` prefix operators.
+
+~~~kit
+var x: Int = 1;
+var y: Ptr[Int] = &x;
+var z: Int = *y;
+~~~
+
+You can usually let type inference handle pointer referencing/dereferencing for you automatically.
+
+~~~kit
+var x: Int = 1;
+// these will work automatically
+var y: Ptr[Int] = x;
+var z: Int = y;
+~~~
+
+### Strings
+
+Kit supports native C null-terminated strings using the `CString` type.
+
+~~~kit
+var s: CString = "hello!";
+~~~
+
+TODO: Kit length-prefixed strings
 
 ### Structs and unions
 
 ~~~kit
 struct MyStruct {
-    public var myField: Int;
+    public var publicField: Int;
+    var privateField: Int = 1;
 }
 
 function main() {
     // pointer auto-dereferencing on field access
     var x: Ptr[MyStruct] = struct MyStruct {
-        myField: 1
+        publicField: 1,
     };
 
-    printf("%li", x.myField);
+    printf("%i", x.publicField);
 }
 ~~~
 
@@ -311,6 +356,18 @@ function main() {
 }
 ~~~
 
+### Typedefs
+
+Typedefs are short names for existing types:
+
+~~~kit
+typedef StringList = List[String];
+~~~
+
+Typedefs are not unique types like [abstracts](#abstracts); they're simply a reference to the existing type.
+
+
+
 Traits
 ------
 
@@ -368,6 +425,7 @@ function main() {
 }
 ~~~
 
+
 C interoperability
 ------------------
 
@@ -400,6 +458,7 @@ function helloSDL() {
     SDL_Quit();
 }
 ~~~
+
 
 Term rewriting
 --------------
@@ -512,6 +571,7 @@ function main() {
     var c = pow(a + b, 2);
 }
 ~~~
+
 
 Implicits
 ---------
