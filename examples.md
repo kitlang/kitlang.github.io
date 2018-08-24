@@ -3,6 +3,44 @@ layout: default
 ---
 
 
+Modules
+-------
+
+Kit code is structured into ".kit" module files. Kit has a simple module system that mirrors the directory structure of your project.
+
+### Source directories
+
+By default, Kit will look for source files in the local "src" directory; you can customize this with one or more alternate source directories using the -s flag to kitc.
+
+### Imports
+
+Importing a module is necessary to reference declarations in that module. Modules are referred to by their path, which begins from the source directory. For example, the file src/pkg/a.kit would be imported from other modules as:
+
+~~~kit
+import pkg.a;
+~~~
+
+If you have multiple source directories, they'll be searched in priority order; the first "pkg/a.kit" found will be used.
+
+Circular imports are allowed.
+
+### Prelude modules
+
+To reduce duplicate import statements across your project, you can create any number of `prelude.kit` files in the project's subdirectories. For every package (subdirectory) in your project, all files in that package or its children will automatically copy the contents of this package's `prelude` module if it exists. Importantly, they do not *import* the prelude file; they copy the contents. This means the prelude should not contain declarations; instead, `import`s and [`using` statements](#using) can be convenient in a prelude module when files in a package share common dependencies.
+
+For example, a module "pkg1.pkg2.module" will look for preludes in the following locations:
+
+- pkg1.pkg2.prelude
+- pkg1.prelude
+- prelude
+
+Unless you know what you're doing, don't create a root-level prelude.kit file! The root-level prelude is how Kit imports its own standard library.
+
+### The main module
+
+A single module will serve as the "main" module, which is the entry point for compilation; all modules imported from this module, and all modules imported from those modules recursively, will be compiled. If compiling an executable (the default), the main module should have a function called `main`, which can be typed as `Int16` or `Void`.
+
+
 Types
 -----
 
@@ -450,6 +488,77 @@ function main() {
 ~~~
 
 
+Generics
+--------
+
+Generics are parameterized functions, types or traits. In other words, they're functions, types or trait "templates", which won't be complete until they're filled in with specific parameter types.
+
+### Generic functions
+
+To make a function generic, declare it with one or more named type parameters:
+
+~~~kit
+function genericFunc[T](value: T) {
+    // ...
+}
+~~~
+
+The compiler will generate a new version of `genericFunc` every time it sees a new type used for T.
+
+~~~kit
+// these are calls to two different functions, since T is different
+genericFunc(1);
+genericFunc(true);
+~~~
+
+In this example, parameter `T` could be any type; a version will be generated with each specific type `T` observed during compilation. We know nothing about the capabilities of type `T`, since it could be anything; this means we can introduce compile-time errors by calling the function with an inappropriate type. For additional safety, type parameters can be constrained to specific trait members:
+
+~~~kit
+function add[T: Numeric](a: T, b: T): T {
+    // this is safe; all T values will be Numeric, so they support addition
+    return a + b;
+}
+~~~
+
+### Generic types
+
+`List` is a parameterized type which can hold values of any other type:
+
+~~~kit
+enum List[T] {
+    Cons(head: T, tail: Ptr[List[T]]);
+    Empty;
+}
+~~~
+
+and `List[Int]` is a specific type of `List` containing `Int` values.
+
+~~~kit
+var x: List[Int] = Cons(1, Empty);
+~~~
+
+If you don't specify all of the type parameters, the compiler will try to infer the missing types:
+
+~~~kit
+// this works; it'll infer that this is a List[Int8]
+var x: List = Cons(1, Empty);
+~~~
+
+### Generic traits
+
+Generic traits are parameterized and can reference their type parameters in trait methods.
+
+~~~kit
+// allocates values of type T
+trait Allocator[T] {
+    // a unique version of alloc/free will be generated for every type that
+    // matches constraint T
+    function alloc[U: T](): Ptr[U];
+    function free[U: T](ptr: Ptr[U]): Void;
+}
+~~~
+
+
 C interoperability
 ------------------
 
@@ -638,76 +747,5 @@ using implicit malloc;
 function main() {
     // allocate an object on the heap; MyObject's "constructor" takes an allocator as argument
     var myObject = MyObject.new();
-}
-~~~
-
-
-Generics
---------
-
-Generics are parameterized functions, types or traits. In other words, they're functions, types or trait "templates", which won't be complete until they're filled in with specific parameter types.
-
-### Generic functions
-
-To make a function generic, declare it with one or more named type parameters:
-
-~~~kit
-function genericFunc[T](value: T) {
-    // ...
-}
-~~~
-
-The compiler will generate a new version of `genericFunc` every time it sees a new type used for T.
-
-~~~kit
-// these are calls to two different functions, since T is different
-genericFunc(1);
-genericFunc(true);
-~~~
-
-In this example, parameter `T` could be any type; a version will be generated with each specific type `T` observed during compilation. We know nothing about the capabilities of type `T`, since it could be anything; this means we can introduce compile-time errors by calling the function with an inappropriate type. For additional safety, type parameters can be constrained to specific trait members:
-
-~~~kit
-function add[T: Numeric](a: T, b: T): T {
-    // this is safe; all T values will be Numeric, so they support addition
-    return a + b;
-}
-~~~
-
-### Generic types
-
-`List` is a parameterized type which can hold values of any other type:
-
-~~~kit
-enum List[T] {
-    Cons(head: T, tail: Ptr[List[T]]);
-    Empty;
-}
-~~~
-
-and `List[Int]` is a specific type of `List` containing `Int` values.
-
-~~~kit
-var x: List[Int] = Cons(1, Empty);
-~~~
-
-If you don't specify all of the type parameters, the compiler will try to infer the missing types:
-
-~~~kit
-// this works; it'll infer that this is a List[Int8]
-var x: List = Cons(1, Empty);
-~~~
-
-### Generic traits
-
-Generic traits are parameterized and can reference their type parameters in trait methods.
-
-~~~kit
-// allocates values of type T
-trait Allocator[T] {
-    // a unique version of alloc/free will be generated for every type that
-    // matches constraint T
-    function alloc[U: T](): Ptr[U];
-    function free[U: T](ptr: Ptr[U]): Void;
 }
 ~~~
