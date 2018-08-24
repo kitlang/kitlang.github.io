@@ -4,7 +4,7 @@ description: A <span class="rainbow">magical</span>, high performance programmin
 theme: jekyll-theme-minimal
 
 github:
-  repository_url: https://github.com/kitlang
+  repository_url: https://github.com/kitlang/kit
 twitter:
   url: https://twitter.com/kitlanguage
 gitter:
