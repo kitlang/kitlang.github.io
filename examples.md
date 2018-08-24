@@ -2,6 +2,156 @@
 layout: default
 ---
 
+
+Types
+-----
+
+Types in Kit can define static fields/methods as well as instance methods.
+
+### Numeric types
+
+Numeric types include:
+
+- Signed integers: `Int8` (`Char`), `Int16` (`Short`), `Int32` (`Int`), and `Int64` (`Long`)
+- Unsigned integers: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
+- Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
+
+All numeric types implement the builtin [trait](#traits) `Numeric`. Integer types also implement `Integral`, while floating point types implement `NumericMixed`.
+
+### Boolean
+
+~~~kit
+var a = true;
+var b = false;
+~~~
+
+### Pointers
+
+A value of type `Ptr[T]` is a pointer to a value of type T. They can be referenced and dereferenced using the `&` and `*` prefix operators.
+
+~~~kit
+var x: Int = 1;
+var y: Ptr[Int] = &x;
+var z: Int = *y;
+~~~
+
+You can usually let type inference handle pointer referencing/dereferencing for you automatically.
+
+~~~kit
+var x: Int = 1;
+// these will work automatically
+var y: Ptr[Int] = x;
+var z: Int = y;
+~~~
+
+### Strings
+
+Kit supports native C null-terminated strings using the `CString` type.
+
+~~~kit
+var s: CString = "hello!";
+~~~
+
+TODO: Kit length-prefixed strings
+
+### Structs and unions
+
+~~~kit
+struct MyStruct {
+    public var publicField: Int;
+    var privateField: Int = 1;
+}
+
+function main() {
+    // pointer auto-dereferencing on field access
+    var x: Ptr[MyStruct] = struct MyStruct {
+        publicField: 1,
+    };
+
+    printf("%i", x.publicField);
+}
+~~~
+
+~~~kit
+union MyUnion {
+    var intField: Int;
+    var floatField: Float;
+    var stringField: CString;
+}
+~~~
+
+### Enums/algebraic data types
+
+Enums are "algebraic data types" and can optionally contain internal data.
+
+Enums that don't have any values which contain internal data will be optimized to C enums.
+
+~~~kit
+/**
+ * Represents a nullable value.
+ */
+enum Option[T] {
+    Some(value: T);
+    None;
+
+    public function unwrap(): T {
+        // enums can be destructured using match expressions
+        match this {
+            Some(value): value;
+            default: throw "Attempt to unwrap an empty Option value";
+        }
+    }
+}
+~~~
+
+### Tuples
+
+Tuples are containers for heterogeneous types; they don't have a name and don't require a declaration.
+
+~~~kit
+var a: (Int, Float, CString) = (1, 2, "hello!");
+// destructure tuples via assignment:
+var b: Int;
+(b, _, _) = a;
+// ...or access fields directly using numeric constants:
+printf("%.2f", a[1]);
+~~~
+
+### Abstracts
+
+Abstract types wrap an existing type with additional compile-time semantics: they allow separating different contexts in which the same type is used, and can have instance methods. Abstract types are zero-cost abstractions; at runtime, they'll be indistinguishable from the underlying type.
+
+~~~kit
+/**
+ * Provides convenience methods for working with colors. Variables can be
+ * typed as Colors, but at runtime they'll be `uint_32t` with zero overhead.
+ */
+abstract Color: Uint32 {
+    public function getRgb(): (Float, Float, Float) {
+        return (this & 0xff0000 >> 16, this & 0xff00 >> 8, this & 0xff);
+    }
+}
+
+function printRgb(c: Color) {
+    print(c.getRgb());
+}
+
+function main() {
+    printRgb(0xff8080);
+}
+~~~
+
+### Typedefs
+
+Typedefs are short names for existing types:
+
+~~~kit
+typedef StringList = List[String];
+~~~
+
+Typedefs are not unique types like [abstracts](#abstracts); they're simply a reference to the existing type.
+
+
 Expressions
 -----------
 
@@ -220,154 +370,6 @@ function main() {
 ~~~
 
 
-Types
------
-
-Types in Kit can define static fields/methods as well as instance methods.
-
-### Numeric types
-
-Numeric types include:
-
-- Signed ints: `Int8` (`Char`), `Int16` (`Short`), `Int32` (`Int`), and `Int64` (`Long`)
-- Unsigned ints: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
-- Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
-
-### Boolean
-
-~~~kit
-var a = true;
-var b = false;
-~~~
-
-### Pointers
-
-A value of type `Ptr[T]` is a pointer to a value of type T. They can be referenced and dereferenced using the `&` and `*` prefix operators.
-
-~~~kit
-var x: Int = 1;
-var y: Ptr[Int] = &x;
-var z: Int = *y;
-~~~
-
-You can usually let type inference handle pointer referencing/dereferencing for you automatically.
-
-~~~kit
-var x: Int = 1;
-// these will work automatically
-var y: Ptr[Int] = x;
-var z: Int = y;
-~~~
-
-### Strings
-
-Kit supports native C null-terminated strings using the `CString` type.
-
-~~~kit
-var s: CString = "hello!";
-~~~
-
-TODO: Kit length-prefixed strings
-
-### Structs and unions
-
-~~~kit
-struct MyStruct {
-    public var publicField: Int;
-    var privateField: Int = 1;
-}
-
-function main() {
-    // pointer auto-dereferencing on field access
-    var x: Ptr[MyStruct] = struct MyStruct {
-        publicField: 1,
-    };
-
-    printf("%i", x.publicField);
-}
-~~~
-
-~~~kit
-union MyUnion {
-    var intField: Int;
-    var floatField: Float;
-    var stringField: CString;
-}
-~~~
-
-### Enums/algebraic data types
-
-Enums are "algebraic data types" and can optionally contain internal data.
-
-Enums that don't have any values which contain internal data will be optimized to C enums.
-
-~~~kit
-/**
- * Represents a nullable value.
- */
-enum Option[T] {
-    Some(value: T);
-    None;
-
-    public function unwrap(): T {
-        // enums can be destructured using match expressions
-        match this {
-            Some(value): value;
-            default: throw "Attempt to unwrap an empty Option value";
-        }
-    }
-}
-~~~
-
-### Tuples
-
-Tuples are containers for heterogeneous types; they don't have a name and don't require a declaration.
-
-~~~kit
-var a: (Int, Float, CString) = (1, 2, "hello!");
-// destructure tuples via assignment:
-var b: Int;
-(b, _, _) = a;
-// ...or access fields directly using numeric constants:
-printf("%.2f", a[1]);
-~~~
-
-### Abstracts
-
-Abstract types wrap an existing type with additional compile-time semantics: they allow separating different contexts in which the same type is used, and can have instance methods. Abstract types are zero-cost abstractions; at runtime, they'll be indistinguishable from the underlying type.
-
-~~~kit
-/**
- * Provides convenience methods for working with colors. Variables can be
- * typed as Colors, but at runtime they'll be `uint_32t` with zero overhead.
- */
-abstract Color: Uint32 {
-    public function getRgb(): (Float, Float, Float) {
-        return (this & 0xff0000 >> 16, this & 0xff00 >> 8, this & 0xff);
-    }
-}
-
-function printRgb(c: Color) {
-    print(c.getRgb());
-}
-
-function main() {
-    printRgb(0xff8080);
-}
-~~~
-
-### Typedefs
-
-Typedefs are short names for existing types:
-
-~~~kit
-typedef StringList = List[String];
-~~~
-
-Typedefs are not unique types like [abstracts](#abstracts); they're simply a reference to the existing type.
-
-
-
 Traits
 ------
 
@@ -385,7 +387,7 @@ implement Writer for File {
 }
 ~~~
 
-Traits enable both compile-time and runtime polymorphism; a generic function can be constrained to types implementing a trait:
+Traits enable both compile-time and runtime polymorphism; a [generic](#generics) can be constrained to types implementing a trait:
 
 ~~~kit
 function greet[W: Writer](w: W) {
@@ -393,7 +395,9 @@ function greet[W: Writer](w: W) {
 }
 ~~~
 
-Values can also be implicitly or explicitly cast to traits they implement, creating a "fat pointer" capable of calling the type's trait methods:
+### Boxes
+
+Values can be implicitly or explicitly cast to traits they implement, creating a "fat pointer" capable of calling the type's trait methods. This is done using the `Box[T]` type.
 
 ~~~kit
 function greet(w: Box[Writer]) {
@@ -406,7 +410,23 @@ function main() {
 }
 ~~~
 
-Traits can be "specialized" to provide a default implementation when none is specified.
+There's an important distinction between trait constraints and boxes:
+
+- `var a: Trait`: variable `a` is *a specific type* which implements the trait
+- `var a: Box[Trait]`: variable `a` could be *any type* implementing the trait
+
+This means that a `List[Trait]` will contain members that are all the *same* type, but a `List[Box[Trait]]` can contain pointers to members of different types that all implement the same trait.
+
+### Specialization
+
+Sometimes a value is constrained to types implementing a certain trait, but the compiler doesn't have enough information to determine *which* specific type should be used; the choice may be somewhat arbitrary. This happens frequently with numeric types.
+
+~~~kit
+// if we don't have any more information, what type should `a` be?
+var a = 1;
+~~~
+
+In these cases, traits can be "specialized" to provide a default implementation when none is specified.
 
 ~~~kit
 trait Map[K, V] {
@@ -415,13 +435,17 @@ trait Map[K, V] {
     function exists(key: K): Bool;
 }
 
+// when we know the key type, substitute a default implementation
 specialize Map[Bool, V] as BoolMap[V];
 specialize Map[Integral, V] as IntMap[V];
 specialize Map[String, V] as StringMap[V];
 
 function main() {
-    var myMap: Map[Int, String] = new Map();
+    var myMap: Map[Int, String] = Map.new();
     myMap[5] = "this just works!";
+
+    var partialMap: Map[Int] = Map.new();
+    partialMap[5] = "this works too thanks to parameter inference";
 }
 ~~~
 
@@ -572,6 +596,8 @@ function main() {
 }
 ~~~
 
+When relying on types to trigger rewrite rules, it's a best practice to include explicit type annotations. In some cases, such as when types are found via [trait specialization](#specialization), it's not guaranteed that any relevant rewrite rules will take effect.
+
 
 Implicits
 ---------
@@ -612,5 +638,76 @@ using implicit malloc;
 function main() {
     // allocate an object on the heap; MyObject's "constructor" takes an allocator as argument
     var myObject = MyObject.new();
+}
+~~~
+
+
+Generics
+--------
+
+Generics are parameterized functions, types or traits. In other words, they're functions, types or trait "templates", which won't be complete until they're filled in with specific parameter types.
+
+### Generic functions
+
+To make a function generic, declare it with one or more named type parameters:
+
+~~~kit
+function genericFunc[T](value: T) {
+    // ...
+}
+~~~
+
+The compiler will generate a new version of `genericFunc` every time it sees a new type used for T.
+
+~~~kit
+// these are calls to two different functions, since T is different
+genericFunc(1);
+genericFunc(true);
+~~~
+
+In this example, parameter `T` could be any type; a version will be generated with each specific type `T` observed during compilation. We know nothing about the capabilities of type `T`, since it could be anything; this means we can introduce compile-time errors by calling the function with an inappropriate type. For additional safety, type parameters can be constrained to specific trait members:
+
+~~~kit
+function add[T: Numeric](a: T, b: T): T {
+    // this is safe; all T values will be Numeric, so they support addition
+    return a + b;
+}
+~~~
+
+### Generic types
+
+`List` is a parameterized type which can hold values of any other type:
+
+~~~kit
+enum List[T] {
+    Cons(head: T, tail: Ptr[List[T]]);
+    Empty;
+}
+~~~
+
+and `List[Int]` is a specific type of `List` containing `Int` values.
+
+~~~kit
+var x: List[Int] = Cons(1, Empty);
+~~~
+
+If you don't specify all of the type parameters, the compiler will try to infer the missing types:
+
+~~~kit
+// this works; it'll infer that this is a List[Int8]
+var x: List = Cons(1, Empty);
+~~~
+
+### Generic traits
+
+Generic traits are parameterized and can reference their type parameters in trait methods.
+
+~~~kit
+// allocates values of type T
+trait Allocator[T] {
+    // a unique version of alloc/free will be generated for every type that
+    // matches constraint T
+    function alloc[U: T](): Ptr[U];
+    function free[U: T](ptr: Ptr[U]): Void;
 }
 ~~~
