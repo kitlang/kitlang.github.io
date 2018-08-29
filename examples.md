@@ -514,11 +514,11 @@ function main() {
 Generics
 --------
 
-Generics are parameterized functions, types or traits. In other words, they're functions, types or trait "templates", which won't be complete until they're filled in with specific parameter types.
+Generics are parameterized functions, types or traits. In other words, they're function, type or trait "templates", which won't be complete until they're filled in with specific parameter types.
 
 ### Generic functions
 
-To make a function generic, declare it with one or more named type parameters:
+To make a function generic, declare it with one or more named type parameters in square braces:
 
 ~~~kit
 function genericFunc[T](value: T) {
