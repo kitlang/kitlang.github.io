@@ -50,7 +50,10 @@ Types in Kit can define static fields/methods as well as instance methods.
 
 Numeric types include:
 
-- Signed integers: `Int8` (`Char`), `Int16` (`Short`), `Int32` (`Int`), and `Int64` (`Long`)
+- Signed integers: `Int8`, `Int16` (`Short`), `Int32`, and `Int64` (`Long`)
+- `Char`, corresponding to C's `char`
+- `Int`, corresponding to C's `int` (which may vary by platform)
+- `Size`, corresponding to C's `size_t`, representing a pointer-sized value
 - Unsigned integers: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
 - Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
 
@@ -124,6 +127,8 @@ Enums are "algebraic data types" and can optionally contain internal data.
 
 Enums that don't have any values which contain internal data will be optimized to C enums.
 
+Enums *cannot* contain themselves, since the size of the structure would be unknown; however, they can contain pointers to themselves.
+
 ~~~kit
 /**
  * Represents a nullable value.
@@ -139,6 +144,16 @@ enum Option[T] {
             default: throw "Attempt to unwrap an empty Option value";
         }
     }
+}
+~~~
+
+An enum may have an *underlying type*; variants of the enum which don't have inernal data will be values of the specified type:
+
+~~~kit
+enum Status: CString {
+    Success = "success";
+    Error = "error";
+    InProgress = "in progress";
 }
 ~~~
 
@@ -178,6 +193,8 @@ function main() {
     printRgb(0xff8080);
 }
 ~~~
+
+Abstracts inherit some semantics from their underlying type by default, including trait implementations and methods. The abstract can declare its own methods or trait implementations which will take precedence over that of the underlying type.
 
 ### Typedefs
 
@@ -220,7 +237,13 @@ var d = "hello";
 Generally type inference will type literals with the smallest type that would hold them and satisfy other program constraints. Literals can also be explicitly typed by using a type suffix:
 
 ~~~kit
+// Uint64
 var a = 1_u64;
+
+// Char, Int, Size
+var a = 1_c;
+var b = 1_i;
+var c = 1_s;
 ~~~
 
 ### this
@@ -747,5 +770,15 @@ using implicit malloc;
 function main() {
     // allocate an object on the heap; MyObject's "constructor" takes an allocator as argument
     var myObject = MyObject.new();
+}
+~~~
+
+You can also access the implicit in scope for a given type using an `implicit` expression:
+
+~~~kit
+var f: Float;
+using implicit f {
+    // since f is in scope as an implicit value, assigns g to f
+    var g = implicit Float;
 }
 ~~~
