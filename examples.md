@@ -34,7 +34,7 @@ For example, a module "pkg1.pkg2.module" will look for preludes in the following
 - pkg1.prelude
 - prelude
 
-Unless you know what you're doing, don't create a root-level prelude.kit file! The root-level prelude is how Kit imports its own standard library.
+Unless you know what you're doing, don't create a root-level prelude.kit file! The root-level prelude is how Kit imports its own standard library. You can, but probably shouldn't, override it.
 
 ### The main module
 
@@ -51,11 +51,11 @@ Types in Kit can define static fields/methods as well as instance methods.
 Numeric types include:
 
 - Signed integers: `Int8`, `Int16` (`Short`), `Int32`, and `Int64` (`Long`)
+- Unsigned integers: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
+- Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
 - `Char`, corresponding to C's `char`
 - `Int`, corresponding to C's `int` (which may vary by platform)
 - `Size`, corresponding to C's `size_t`, representing a pointer-sized value
-- Unsigned integers: `Uint8` (`Byte`), `Uint16`, `Uint32`, `Uint64`
-- Floating point numbers: `Float32` (`Float`), `Float64` (`Double`)
 
 All numeric types implement the builtin [trait](#traits) `Numeric`. Integer types also implement `Integral`, while floating point types implement `NumericMixed`.
 
@@ -195,6 +195,26 @@ function main() {
 ~~~
 
 Abstracts inherit some semantics from their underlying type by default, including trait implementations and methods. The abstract can declare its own methods or trait implementations which will take precedence over that of the underlying type.
+
+Abstracts unify with their underlying type in only one direction. Given `abstract Color: Uint32`:
+
+- A `Color` can be used anywhere a `Uint32` is expected.
+- However, a `Uint32` must be explicitly cast to be promoted to a Color:
+
+~~~kit
+var c: Color = 0xffffff_u32 as Color;
+~~~
+
+- Types which share the same underlying type can also be converted via explicit casting:
+
+~~~kit
+abstract RgbaColor: Uint32;
+
+var c: Color = 0xffffff_u32 as Color;
+var a: RgbaColor = c as RgbaColor;
+~~~
+
+The underlying type of an abstract can be another abstract, in which case the true runtime type is the parent's runtime type; otherwise, the same abstract conversion rules apply.
 
 ### Typedefs
 
@@ -454,6 +474,47 @@ Traits enable both compile-time and runtime polymorphism; a [generic](#generics)
 function greet[W: Writer](w: W) {
     w.write("hello");
 }
+~~~
+
+### Associated types
+
+Sometimes parameters generic traits are determined by the input and don't need to be specified. In these cases the trait can declare "associated types" - each implementation can specify one specific type for each associated type. Associated types are parameters that may be different in each trait implementation, but which the user doesn't have to specify - they're always known from the type and parameters of the implementor.
+
+An example is `Iterable`:
+
+~~~kit
+// note parens instead of brackets
+trait Iterable(IteratorT) {
+    public function iterator(): Box[Iterator[IteratorT]];
+}
+~~~
+
+`Iterable` allows a type to be iterated over using a `for` loop, by specifying how the value returns a boxed `Iterator` value. Each type may only implement `Iterable` once, and the resulting iterator may generate any one type of value:
+
+~~~kit
+implement Iterable(Int) for MyList[Int] {
+    public function iterator(): Box[Iterator[Int]] {
+        // ...
+    }
+}
+~~~
+
+`MyList[Int]` is iterable, and always generates an iterator over `Int` values.
+
+Without associated types, it would be possible to implement `Iterable` multiple times, which would be unnecessarily verbose and ambiguous:
+
+~~~kit
+trait Iterable[T];
+
+// which instance should we use in a for loop?
+implement Iterable[Int] for MyList[Int];
+implement Iterable[Float] for MyList[Int];
+~~~
+
+Traits can declare both parameters and associated types:
+
+~~~kit
+trait MyTrait[ExplicitT, ExplicitU](AssociatedT, AssociatedU);
 ~~~
 
 ### Boxes
