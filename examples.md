@@ -478,7 +478,7 @@ function greet[W: Writer](w: W) {
 
 ### Associated types
 
-Sometimes parameters generic traits are determined by the input and don't need to be specified. In these cases the trait can declare "associated types" - each implementation can specify one specific type for each associated type. Associated types are parameters that may be different in each trait implementation, but which the user doesn't have to specify - they're always known from the type and parameters of the implementor.
+Sometimes parameters of generic traits that vary by trait implementation can be determined by the trait implemention itself, and shouldn't need to be specified whenever the trait is used. In these cases the trait can declare "associated types" - each implementation can specify a specific type for each associated type parameter, and these parameters will be implicit in the trait.
 
 An example is `Iterable`:
 
@@ -489,7 +489,7 @@ trait Iterable(IteratorT) {
 }
 ~~~
 
-`Iterable` allows a type to be iterated over using a `for` loop, by specifying how the value returns a boxed `Iterator` value. Each type may only implement `Iterable` once, and the resulting iterator may generate any one type of value:
+`Iterable` allows a type to be iterated over using a `for` loop, by specifying how to get a boxed `Iterator` value for values of the given type. Because `Iterable` has no generic type parameters, only associated type parameters, each type may only implement `Iterable` once. The resulting iterator generates values of some type, which is a function of the collection type:
 
 ~~~kit
 implement Iterable(Int) for MyList[Int] {
@@ -501,7 +501,7 @@ implement Iterable(Int) for MyList[Int] {
 
 `MyList[Int]` is iterable, and always generates an iterator over `Int` values.
 
-Without associated types, it would be possible to implement `Iterable` multiple times, which would be unnecessarily verbose and ambiguous:
+Without associated types, we would have a generic trait `Iterable[T]`; in addition to the verbosity of the additional parameter, it would be possible to implement `Iterable` multiple times for the same type, resulting in ambiguity:
 
 ~~~kit
 trait Iterable[T];
