@@ -46,7 +46,9 @@ Types
 
 Types in Kit can define static fields/methods as well as instance methods.
 
-### Numeric types
+### Basic Types
+
+#### Numeric types
 
 Numeric types include:
 
@@ -59,14 +61,14 @@ Numeric types include:
 
 All numeric types implement the builtin [trait](#traits) `Numeric`. Integer types also implement `Integral`, while floating point types implement `NumericMixed`.
 
-### Boolean
+#### Boolean
 
 ~~~kit
 var a = true;
 var b = false;
 ~~~
 
-### Pointers
+#### Pointers
 
 A value of type `Ptr[T]` is a pointer to a value of type T. They can be referenced and dereferenced using the `&` and `*` prefix operators.
 
@@ -85,7 +87,7 @@ var y: Ptr[Int] = x;
 var z: Int = y;
 ~~~
 
-### Strings
+#### Strings
 
 Kit supports native C null-terminated strings using the `CString` type.
 
@@ -95,7 +97,24 @@ var s: CString = "hello!";
 
 TODO: Kit length-prefixed strings
 
-### Structs and unions
+### Tuples
+
+Tuples are containers for heterogeneous types; they don't have a name and don't require a declaration.
+
+~~~kit
+var a: (Int, Float, CString) = (1, 2, "hello!");
+// destructure tuples via assignment:
+var b: Int;
+(b, _, _) = a;
+// ...or access fields directly using numeric constants:
+printf("%.2f", a[1]);
+~~~
+
+### Compound types
+
+Compound types - structs, unions, enums and abstracts - are built from existing types and share a common set of features.
+
+#### Structs and unions
 
 ~~~kit
 struct MyStruct {
@@ -121,7 +140,7 @@ union MyUnion {
 }
 ~~~
 
-### Enums/algebraic data types
+#### Enums/algebraic data types
 
 Enums are "algebraic data types" and can optionally contain internal data.
 
@@ -157,20 +176,7 @@ enum Status: CString {
 }
 ~~~
 
-### Tuples
-
-Tuples are containers for heterogeneous types; they don't have a name and don't require a declaration.
-
-~~~kit
-var a: (Int, Float, CString) = (1, 2, "hello!");
-// destructure tuples via assignment:
-var b: Int;
-(b, _, _) = a;
-// ...or access fields directly using numeric constants:
-printf("%.2f", a[1]);
-~~~
-
-### Abstracts
+#### Abstracts
 
 Abstract types wrap an existing type with additional compile-time semantics: they allow separating different contexts in which the same type is used, and can have instance methods. Abstract types are zero-cost abstractions; at runtime, they'll be indistinguishable from the underlying type.
 
@@ -216,9 +222,61 @@ var a: RgbaColor = c as RgbaColor;
 
 The underlying type of an abstract can be another abstract, in which case the true runtime type is the parent's runtime type; otherwise, the same abstract conversion rules apply.
 
+### Compound type features
+
+#### Instance methods
+
+Compound types can declare instance methods:
+
+~~~kit
+abstract MyType: Int {
+    public function printMe() {
+        printf("%i", this);
+    }
+}
+~~~
+
+An instance method is a function which takes an instance of the type as an implicit first argument. There are two ways to call instance methods, which are equivalent:
+
+~~~kit
+var a = 1 as MyType;
+
+// call on the instance
+a.printMe();
+
+// pass the instance explicitly
+MyType.printMe(a);
+~~~
+
+The implicit first argument is passed in as a pointer. Within the method, `this` and `&this` can be used to refer to the value and the pointer respectively.
+
+#### Static variables and methods
+
+Compound types can declare static variables and static methods to group associated functions and variables that don't take an initial instance value within the same namespace.
+
+~~~kit
+struct MyData {
+    // this is a static variable; it exists in only one place
+    public static var b: Int;
+
+    // this is a struct field; each MyData value will have one
+    public var a: Int;
+
+    public static function staticMethod() {
+        // this function does *not* take an instance of MyData
+    }
+}
+~~~
+
+Static variables and methods can be accessed using the name of the type:
+
+~~~kit
+MyData.staticMethod();
+~~~
+
 ### Typedefs
 
-Typedefs are short names for existing types:
+Typedefs create aliases for existing types:
 
 ~~~kit
 typedef StringList = List[String];
