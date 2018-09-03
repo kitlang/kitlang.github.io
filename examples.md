@@ -341,7 +341,19 @@ struct MyStruct {
 
 ### for
 
-TODO
+There are two types of for loops in Kit: numeric for loops, and iteration over collections.
+
+`n...m` is a special intrinsic which, when used in a for loop, will compile to a simple C for loop:
+
+~~~kit
+for i in 1 ... 5 {
+    printf("%i\n", i);
+}
+~~~
+
+`for` loops can also be used to iterate over values which implement the [`Iterable` trait](#kititerator)
+
+It's also possible to use [rewrite rules](#term-rewriting) to optimize for loops over specific types into some other form.
 
 ### while
 
@@ -901,3 +913,112 @@ using implicit f {
     var g = implicit Float;
 }
 ~~~
+
+
+Standard library
+----------------
+
+Kit includes a compact standard library; some modules of the standard library are imported by default via the root-level [`prelude` module](#prelude-modules)
+
+### kit.array
+
+TODO
+
+### kit.cmp
+
+TODO
+
+### kit.either
+
+The `Either[A, B]` enum represents values which can take one of two types. Among other use cases, it can be used to return error information from a function.
+
+### kit.file
+
+TODO
+
+### kit.io
+
+TODO
+
+### kit.iterator
+
+The two traits defined in `kit.iterator`, `Iterable` and `Iterator`, are used in [`for` loops](#for).
+
+~~~kit
+var list: List[Int];
+for item in list {
+    // ...
+}
+~~~
+
+For loops are often used to iterate over arrays, lists, or other collection types; Kit makes this usage easy by adding syntactic sugar via the `for` loop.
+
+#### Iterable
+
+A value that can be iterated over must implement `Iterable`:
+
+~~~kit
+implement Iterable(Int) for MyIntList {
+    // ...
+}
+~~~
+
+This trait has one associated type, which is the type of values produced by the iterator. `Iterable` has one method, `iterator`, which when called produces a value that implements the `Iterator[T]` trait. This trait is for iterator values, i.e. values which track the state of a single iteration pass.
+
+#### Iterator
+
+`Iterator[T]` has a single method, `next`:
+
+~~~kit
+trait Iterator[T] {
+    public function next(): (Box[Iterator[T]], Option[T]);
+}
+~~~
+
+The `next` method returns a tuple containing a new iterator (or the same iterator for iterators containing mutable state) and an [`Option` value](#kitoption), which could be `Some(value)` or `None` if the iterator is exhausted.
+
+Given an implementor of `Iterable`, Kit will call `iterator()` once, then call `next()` repeatedly in a loop until a `None` value is returned.
+
+### kit.list
+
+The `List[T]` type is an enum representing a singly linked list. Each non-empty node contains a pointer to another `List[T]` node.
+
+### kit.macro
+
+TODO
+
+### kit.map
+
+TODO
+
+### kit.mem
+
+TODO
+
+### kit.numeric
+
+This module contains numeric typeclasses such as `Numeric`, `Integral` and `NumericMixed`, which are used to describe the various builtin numeric types.
+
+### kit.option
+
+A single enum, `Option[T]`, is used to express optional values. Variant `Some(value)` is used when a value is present, and `None` is used otherwise.
+
+### kit.pointer
+
+TODO
+
+### kit.random
+
+TODO
+
+### kit.string
+
+TODO
+
+### kit.sys
+
+TODO
+
+### kit.vector
+
+TODO
