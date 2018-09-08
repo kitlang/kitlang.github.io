@@ -284,6 +284,16 @@ typedef StringList = List[String];
 
 Typedefs are not unique types like [abstracts](#abstracts); they're simply a reference to the existing type.
 
+### Self
+
+`Self` is a special reference type:
+
+- In a compound type's fields or methods, it refers to the type itself.
+- In a trait definition, it refers to the trait.
+- In a trait implementation, it refers to the implementing type.
+
+`Self` can generally be used in the same places as [`this`](#this) and will have the same type as the value of `this`; an exception is static methods, where `Self` is allowed and `this` is not. Outside of these contexts, `Self` may not be used.
+
 
 Expressions
 -----------
