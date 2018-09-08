@@ -524,7 +524,7 @@ function main() {
 Traits
 ------
 
-Traits (typeclasses) enable open polymorphism in Kit:
+Traits, similar to [typeclasses](https://en.wikipedia.org/wiki/Type_class), are interfaces which can be implemented for a type. Once a trait is implemented for a given type, values of that type can be converted to "boxed" pointers (using the [`Box[T]`](#boxes) type) which look the same regardless of the type's identity; this enables open polymorphism in Kit:
 
 ~~~kit
 trait Writer {
@@ -538,11 +538,91 @@ implement Writer for File {
 }
 ~~~
 
-Traits enable both compile-time and runtime polymorphism; a [generic](#generics) can be constrained to types implementing a trait:
+Unlike traditional object-oriented interfaces,
+
+- Traits can be implemented for *any* type, even basic types like `Int` or `String`.
+- Trait implementations are separate from the type's definition, so you can implement a trait for a type you didn't define. This enables more extensible and modular code.
+
+Traits can be used for both compile-time and runtime polymorphism.
+
+### Boxes
+
+The `Box[T]` type is used to create boxed pointers, which can call any of a trait's methods on a value implementing the trait.
+
+~~~kit
+function greet(w: Box[Writer]) {
+    w.write("hello!");
+}
+
+function main() {
+    var f = File.write("/tmp/greeting");
+    greet(f);
+}
+~~~
+
+### Trait constraints
+
+Using traits as type annotations creates a trait constraint, meaning a value will be some specific type which implements the trait.
+
+~~~kit
+var a: Writer;
+~~~
+
+A [generic](#generics) can also be constrained to types implementing a trait:
 
 ~~~kit
 function greet[W: Writer](w: W) {
     w.write("hello");
+}
+~~~
+
+This incurs no runtime cost as there is no boxing involved; at compile-time, we will know the exact value of the type being used.
+
+There's an important distinction between trait constraints and boxes:
+
+- `var a: Trait`: variable `a` is *one specific type* which implements the trait.
+- `var a: Box[Trait]`: variable `a` is a boxed pointer; underneath that pointer could be *any type* implementing the trait.
+
+This means that a `List[Trait]` will contain members that are all the *same* type, but a `List[Box[Trait]]` can contain pointers to members of different types that all implement the same trait.
+
+#### Specialization
+
+Sometimes a value is constrained to types implementing a certain trait, but the compiler doesn't have enough information to determine *which* specific type should be used; the choice may be somewhat arbitrary. This happens frequently with numeric types.
+
+~~~kit
+// if we don't have any more information, what type should `a` be?
+var a = 1;
+~~~
+
+In these cases, traits can be "specialized" to provide a default implementation when none is specified. Above, `Numeric` has been specialized as `Int`, so `Int` will be used by default. If we had encountered additional information about the value's type, the specialization may have gone differently:
+
+~~~kit
+var a = 1;
+// given the next line, we know `a` must hold mixed numbers, so it will
+// specialize to Float instead of Int
+a += 2.5;
+~~~
+
+`Map` is another example of trait specialization in action, allowing users to create a `Map` value with `Map.new()` and have its type filled in automatically based on the key:
+
+~~~kit
+trait Map[K, V] {
+    function get(key: K): V;
+    function set(key: K, value: V): V;
+    function exists(key: K): Bool;
+}
+
+// when we know the key type, substitute a default implementation
+specialize Map[Bool, V] as BoolMap[V];
+specialize Map[Integral, V] as IntMap[V];
+specialize Map[String, V] as StringMap[V];
+
+function main() {
+    var myMap: Map[Int, String] = Map.new();
+    myMap[5] = "this just works!";
+
+    var partialMap: Map[Int] = Map.new();
+    partialMap[5] = "this works too thanks to parameter inference";
 }
 ~~~
 
@@ -585,60 +665,6 @@ Traits can declare both parameters and associated types:
 
 ~~~kit
 trait MyTrait[ExplicitT, ExplicitU](AssociatedT, AssociatedU);
-~~~
-
-### Boxes
-
-Values can be implicitly or explicitly cast to traits they implement, creating a "fat pointer" capable of calling the type's trait methods. This is done using the `Box[T]` type.
-
-~~~kit
-function greet(w: Box[Writer]) {
-    w.write("hello!");
-}
-
-function main() {
-    var f = File.write("/tmp/greeting");
-    greet(f);
-}
-~~~
-
-There's an important distinction between trait constraints and boxes:
-
-- `var a: Trait`: variable `a` is *a specific type* which implements the trait
-- `var a: Box[Trait]`: variable `a` could be *any type* implementing the trait
-
-This means that a `List[Trait]` will contain members that are all the *same* type, but a `List[Box[Trait]]` can contain pointers to members of different types that all implement the same trait.
-
-### Specialization
-
-Sometimes a value is constrained to types implementing a certain trait, but the compiler doesn't have enough information to determine *which* specific type should be used; the choice may be somewhat arbitrary. This happens frequently with numeric types.
-
-~~~kit
-// if we don't have any more information, what type should `a` be?
-var a = 1;
-~~~
-
-In these cases, traits can be "specialized" to provide a default implementation when none is specified.
-
-~~~kit
-trait Map[K, V] {
-    function get(key: K): V;
-    function set(key: K, value: V): V;
-    function exists(key: K): Bool;
-}
-
-// when we know the key type, substitute a default implementation
-specialize Map[Bool, V] as BoolMap[V];
-specialize Map[Integral, V] as IntMap[V];
-specialize Map[String, V] as StringMap[V];
-
-function main() {
-    var myMap: Map[Int, String] = Map.new();
-    myMap[5] = "this just works!";
-
-    var partialMap: Map[Int] = Map.new();
-    partialMap[5] = "this works too thanks to parameter inference";
-}
 ~~~
 
 
