@@ -718,6 +718,8 @@ C interoperability
 
 Kit features seamless interoperability with existing C libraries. Kit compiles to C and its type system exposes C types directly. You can call C functions from Kit or Kit functions from C, by explicitly including header files, no additional bindings required.
 
+### Using C from Kit
+
 ~~~kit
 include "stdio.h";
 
@@ -745,6 +747,23 @@ function helloSDL() {
     SDL_Quit();
 }
 ~~~
+
+### Using Kit from C
+
+You may also want to compile Kit into a library and use it from C code. Two things to keep in mind:
+
+- Use the `--lib` flag to compile a library instead of an executable.
+- Functions in Kit are namespaced, which involves name mangling. To expose them to C, use the `#[extern]` metadata on your function to prevent name mangling:
+
+~~~kit
+#[extern]
+function myExternFunction() {
+    // you can call this from C as `myExternFunction`
+    printf("hello from Kit!\n");
+}
+~~~
+
+Keep in mind that `#[extern]` creates a global name; care should be taken so that global names don't clash with each other, or with existing names in your C code.
 
 
 Term rewriting
