@@ -167,7 +167,7 @@ enum Option[T] {
 }
 ~~~
 
-An enum may have an *underlying type*; variants of the enum which don't have inernal data will be values of the specified type:
+An enum may have an *underlying type*; variants of the enum which don't have internal data will be values of the specified type:
 
 ~~~kit
 enum Status: CString {
