@@ -321,6 +321,8 @@ var b = 1.0;
 var c = true;
 // C (null-terminated) string
 var d = "hello";
+// char
+var alphabetSize = c'z' - c'a' + 1;
 ~~~
 
 Generally type inference will type literals with the smallest type that would hold them and satisfy other program constraints. Literals can also be explicitly typed by using a type suffix:
@@ -490,8 +492,6 @@ match Value {
 }
 ~~~
 
-`match` can be used as an expression; the types of all match bodies must match, and the match patterns must be exhaustive (or have a default clause.)
-
 ### defer
 
 TODO
@@ -570,6 +570,8 @@ function main() {
     greet(f);
 }
 ~~~
+
+Since a box contains a pointer to the value used to create it, the box's useful lifetime is the same as the underlying pointer. Care should be taken when retaining boxes of stack allocated values, or values in heap memory which may have been freed.
 
 ### Trait constraints
 
@@ -683,6 +685,8 @@ Generics
 --------
 
 Generics are parameterized functions, types or traits. In other words, they're function, type or trait "templates", which won't be complete until they're filled in with specific parameter types.
+
+Generic type parameters are always **invariant**, meaning that types that can be implicitly converted between each other in some contexts *cannot* be used interchangeably as type parameters. For example, this means even though `Int` and `Float` can sometimes be used interchangeably (implicitly converted from one to the other), a `List[Int]` and a `List[Float]` are *not* the same type and will not unify in any context.
 
 ### Generic functions
 
@@ -967,6 +971,37 @@ var f: Float;
 using implicit f {
     // since f is in scope as an implicit value, assigns g to f
     var g = implicit Float;
+}
+~~~
+
+To reduce ambiguity, implicit values are **invariant**, i.e. their types must match exactly. This means that even though the following is valid in some contexts:
+
+~~~kit
+function f(value: Float) {
+    // ...
+}
+
+var x: Int = 1;
+// this is fine, since Int normally unifies with Float
+f(x);
+~~~
+
+it won't work with implicits:
+
+~~~kit
+function f(value: Float) {
+    // ...
+}
+
+var x: Int = 1;
+using implicit x {
+    // this won't work!
+    // we have an implicit Int in scope, but not an implicit Float
+    f();
+}
+using implicit x as Float {
+    // this is fine
+    f();
 }
 ~~~
 
