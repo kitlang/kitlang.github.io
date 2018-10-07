@@ -111,6 +111,22 @@ var b: Int;
 printf("%.2f", a[1]);
 ~~~
 
+### CArrays
+
+C arrays can be either explicitly sized or unsized:
+
+~~~kit
+var x: CArray[Int, 3] = [1, 2, 3];
+~~~
+
+~~~kit
+// the "unsized array struct hack"
+struct IntValues {
+    var length: Size;
+    var values: CArray[Int];
+}
+~~~
+
 ### Compound types
 
 Compound types - structs, unions, enums and abstracts - are built from existing types and share a common set of features.
@@ -260,6 +276,9 @@ struct MyData {
     // this is a static variable; it exists in only one place
     public static var b: Int;
 
+    // this static field can't be reassigned
+    public static const MY_CONST: Int = 123;
+
     // this is a struct field; each MyData value will have one
     public var a: Int;
 
@@ -298,6 +317,16 @@ Typedefs are not unique types like [abstracts](#abstracts); they're simply a ref
 
 Expressions
 -----------
+
+### Variables
+
+~~~kit
+var a: Int = 1;
+// uninitialized; will rely on type inference to determine the type
+var b;
+// single-assignment; can't be reassigned or declared without initializing
+const c: CString = "hello";
+~~~
 
 ### Blocks
 
@@ -433,13 +462,15 @@ Field access on pointers to structs will automatically dereference the pointer.
 ~~~kit
 struct MyStruct {
     var a: Int;
-    var b: Int;
+    const b: Int = 2;
     var c: Int = 3;
 }
 
 var s: MyStruct = struct MyStruct {
     a: 1,
-    b: 2,
+    // we can provide a different value for `const b` but we won't be able to
+    // reassign it afterward
+    b: 4,
     // since c has a default value, it is optional
 };
 ~~~
@@ -739,6 +770,13 @@ If you don't specify all of the type parameters, the compiler will try to infer 
 var x: List = Cons(1, Empty);
 ~~~
 
+To access a static field or method on a generic type, you can specify the type parameters, or leave them blank to allow type inference to try to fill them in.
+
+~~~kit
+var l: List[Int] = Empty;
+printf("%zu", List[Int].length(l));
+```
+
 ### Generic traits
 
 Generic traits are parameterized and can reference their type parameters in trait methods.
@@ -1019,13 +1057,13 @@ TODO
 
 TODO
 
+### kit.common
+
+Various core types such as `CArray` are defined here.
+
 ### kit.either
 
 The `Either[A, B]` enum represents values which can take one of two types. Among other use cases, it can be used to return error information from a function.
-
-### kit.file
-
-TODO
 
 ### kit.io
 
@@ -1084,7 +1122,9 @@ TODO
 
 ### kit.mem
 
-TODO
+Contains helpers for memory allocation. Types that require heap allocation often provide a constructor that accepts an implicit `Box[Allocator]` as the first argument. This will use `malloc` by default, but allows easily swapping in a custom allocator in a given scope.
+
+Basic `LinearAllocator` and `StackAllocator` implementations are also contained in this module.
 
 ### kit.numeric
 
@@ -1108,7 +1148,39 @@ TODO
 
 ### kit.sys
 
-TODO
+#### kit.sys.dir
+
+Used to read directory contents:
+
+~~~kit
+import kit.sys.dir;
+
+var dir: DirectoryReader = readDir("/tmp");
+~~~
+
+#### kit.sys.file
+
+The helper type `File` is used for file input/output.
+
+~~~kit
+if !File.exists("temp.txt") {
+    // open a file for writing
+    var f = File.write("temp.txt");
+    f.writeBytes("hello", 5);
+    f.close();
+
+    // open for reading
+    var f2 = File.read("temp.txt");
+    var buf = malloc(5);
+    f2.readBytes(buf, 5);
+
+    File.remove("temp.txt");
+}
+~~~
+
+#### kit.sys.path
+
+Abstraction over file paths. `Path` is an abstract over `CString`, but `CStrings` can be automatically promoted to `Path` without requiring a cast.
 
 ### kit.vector
 
