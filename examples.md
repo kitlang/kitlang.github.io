@@ -127,6 +127,8 @@ struct IntValues {
 }
 ~~~
 
+The special value `empty` can be used to initialize an explicitly empty array.
+
 ### Compound types
 
 Compound types - structs, unions, enums and abstracts - are built from existing types and share a common set of features.
@@ -156,6 +158,8 @@ union MyUnion {
     var stringField: CString;
 }
 ~~~
+
+The special value `empty` can initialize an empty struct or union.
 
 #### Enums/algebraic data types
 
