@@ -779,7 +779,7 @@ To access a static field or method on a generic type, you can specify the type p
 ~~~kit
 var l: List[Int] = Empty;
 printf("%zu", List[Int].length(l));
-```
+~~~
 
 ### Generic traits
 
