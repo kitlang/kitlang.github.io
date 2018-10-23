@@ -591,6 +591,21 @@ Unlike traditional object-oriented interfaces,
 
 Traits can be used for both compile-time and runtime polymorphism.
 
+Static dispatch to trait implementation methods is possible using the name of the trait and method:
+
+~~~kit
+implement MyTrait for Int {
+    public function exclaim() {
+        printf("hello from %i\n", this);
+    }
+}
+
+function main() {
+    var i = 1_i;
+    i.MyTrait.exclaim();
+}
+~~~
+
 ### Boxes
 
 The `Box[T]` type is used to create boxed pointers, which can call any of a trait's methods on a value implementing the trait.
@@ -620,11 +635,11 @@ A [generic](#generics) can also be constrained to types implementing a trait:
 
 ~~~kit
 function greet[W: Writer](w: W) {
-    w.write("hello");
+    w.Writer.write("hello");
 }
 ~~~
 
-This incurs no runtime cost as there is no boxing involved; at compile-time, we will know the exact value of the type being used.
+This incurs no runtime cost as there is no boxing involved; at compile time, we will know the exact value of the type being used.
 
 There's an important distinction between trait constraints and boxes:
 
