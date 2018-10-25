@@ -904,7 +904,7 @@ rules TupleMath {
 
 function main() {
     using rules TupleMath {
-        var a = (1_i32, 2_i32) + (3_i32, 4_i32);
+        var a = (1_i, 2_i) + (3_i, 4_i);
     }
 }
 ~~~
