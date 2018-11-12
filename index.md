@@ -2,7 +2,7 @@
 layout: default
 ---
 
-**Kit** is a programming language designed for creating concise, high performance cross-platform applications. Kit compiles to C, so it's highly portable; it can be used in addition to or as an alternative to C, and was designed with game development in mind.
+**Kit** is a programming language designed for creating concise, high performance cross-platform applications. Kit compiles to ANSI C99, so it's highly portable; it can be used in addition to or as an alternative to C, and was designed with game development in mind.
 
 
 ~~~kit
@@ -21,7 +21,7 @@ function main() {
 
 * Kit has a **strong, static** type system to catch errors at compile-time.
 * Kit is a **procedural language**, not object-oriented or functional; however, [traits](examples.html#traits), [boxes](examples.html#boxes) and [abstracts](examples.html#abstracts) can simulate object-oriented interfaces and polymorphism.
-* Kit **compiles to C**, which then compiles to native libraries or executables.
+* Kit **compiles to standard C**, which then compiles to native libraries or executables.
 * Memory management in Kit is **manual** (no automatic garbage collection), with some convenience features to make this easier.
 
 *Kit is pre-alpha and not all features are fully implemented; see the [roadmap on Trello](https://trello.com/b/Bn9H0fzk/kit).*
