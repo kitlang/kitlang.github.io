@@ -567,6 +567,30 @@ function main() {
 ~~~
 
 
+Functions
+---------
+
+~~~kit
+function myFunction(arg1: Int, arg2: Float): CString {
+    return "hello!";
+}
+~~~
+
+### Variadic functions
+
+Functions can take a variable number of arguments by including a `...` after the final parameter name:
+
+~~~kit
+function variadicFunction(arg1: Int, varargs...) {
+    var arg1: Int = varargs;
+    var arg2: Float = varargs;
+    // ...
+}
+~~~
+
+Every time the parameter name is used in an expression, a new argument will be taken from the parameters passed in. The type of the argument is unknown, so you'll need to annotate it.
+
+
 Traits
 ------
 
