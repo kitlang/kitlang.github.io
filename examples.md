@@ -187,16 +187,6 @@ enum Option[T] {
 }
 ~~~
 
-An enum may have an *underlying type*; variants of the enum which don't have internal data will be values of the specified type:
-
-~~~kit
-enum Status: CString {
-    Success = "success";
-    Error = "error";
-    InProgress = "in progress";
-}
-~~~
-
 #### Abstracts
 
 Abstract types wrap an existing type with additional compile-time semantics: they allow separating different contexts in which the same type is used, and can have instance methods. Abstract types are zero-cost abstractions; at runtime, they'll be indistinguishable from the underlying type.
