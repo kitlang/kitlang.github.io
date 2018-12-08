@@ -288,6 +288,25 @@ Static variables and methods can be accessed using the name of the type:
 MyData.staticMethod();
 ~~~
 
+#### Type extension
+
+Types don't need to be defined all in one place; you can add to them using an `extend` statement:
+
+~~~kit
+struct MyStruct {
+    var field1: Int;
+    var field2: Float;
+
+    public function method1() {}
+}
+
+extend MyStruct {
+    var field3: CString;
+
+    public function method2() {}
+}
+~~~
+
 ### Typedefs
 
 Typedefs create aliases for existing types:
