@@ -25,6 +25,18 @@ If you have multiple source directories, they'll be searched in priority order; 
 
 Circular imports are allowed.
 
+A "package" is a directory which contains modules. You can import all modules from a package with a wildcard import:
+
+~~~kit
+import pkg.*;
+~~~
+
+You can also import all modules in the package, and all modules inside any packages it contains, recursively with a double wildcard:
+
+~~~kit
+import pkg.**;
+~~~
+
 ### Prelude modules
 
 To reduce duplicate import statements across your project, you can create any number of `prelude.kit` files in the project's subdirectories. For every package (subdirectory) in your project, all files in that package or its children will automatically copy the contents of this package's `prelude` module if it exists. Importantly, they do not *import* the prelude file; they copy the contents. This means the prelude should not contain declarations; instead, `import`s and [`using` statements](#using) can be convenient in a prelude module when files in a package share common dependencies.
