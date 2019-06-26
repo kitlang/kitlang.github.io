@@ -56,7 +56,7 @@ A couple key differences:
 
 * *"[If Zig code doesn't look like it's jumping away to call a function, then it isn't.](https://github.com/ziglang/zig/wiki/Why-Zig-When-There-is-Already-CPP,-D,-and-Rust%3F#no-hidden-control-flow)"* Zig prioritizes readability (if we define readability here as "being able to read code and know what it will do at runtime.") Kit prefers to be concise and separate intent from mechanics; it provides metaprogramming that violate this definition of readability. Examples include [term rewriting](examples.html#term-rewriting) and [implicits](examples.html#implicits).
 
-* Kit includes additional features inspired by functional langauges, including traits, implicits, algebraic data types and pattern matching.
+* Kit includes additional features inspired by functional languages, including traits, implicits, algebraic data types and pattern matching.
 
 * Kit uses [traits](examples.html#traits) as a mechanism for runtime polymorphism. Zig has no builtin mechanism for runtime polymorphism.
 
