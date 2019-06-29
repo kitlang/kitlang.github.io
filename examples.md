@@ -149,8 +149,9 @@ Compound types - structs, unions, enums and abstracts - are built from existing 
 
 ~~~kit
 struct MyStruct {
-    public var publicField: Int;
-    var privateField: Int = 1;
+    // fields/methods are public by default
+    var publicField: Int;
+    private var privateField: Int = 1;
 }
 
 function main() {
@@ -189,7 +190,7 @@ enum Option[T] {
     Some(value: T);
     None;
 
-    public function unwrap(): T {
+    function unwrap(): T {
         // enums can be destructured using match expressions
         match this {
             Some(value): value;
@@ -209,17 +210,18 @@ Abstract types wrap an existing type with additional compile-time semantics: the
  * typed as Colors, but at runtime they'll be `uint_32t` with zero overhead.
  */
 abstract Color: Uint32 {
-    public function getRgb(): (Float, Float, Float) {
-        return (this & 0xff0000 >> 16, this & 0xff00 >> 8, this & 0xff);
+    function getRgb(): (Uint8, Uint8, Uint8) {
+        return ((this & 0xff0000) >> 16, (this & 0xff00) >> 8, this & 0xff);
     }
 }
 
 function printRgb(c: Color) {
-    print(c.getRgb());
+    var r = c.getRgb();
+    printf("R=0x%.2x G=0x%.2x B=0x%.2x", r[0], r[1], r[2]);
 }
 
 function main() {
-    printRgb(0xff8080);
+    printRgb(0xff8080 as Color);
 }
 ~~~
 
@@ -253,7 +255,7 @@ Compound types can declare instance methods:
 
 ~~~kit
 abstract MyType: Int {
-    public function printMe() {
+    function printMe() {
         printf("%i", this);
     }
 }
@@ -280,15 +282,15 @@ Compound types can declare static variables and static methods to group associat
 ~~~kit
 struct MyData {
     // this is a static variable; it exists in only one place
-    public static var b: Int;
+    static var b: Int;
 
     // this static field can't be reassigned
-    public static const MY_CONST: Int = 123;
+    static const MY_CONST: Int = 123;
 
     // this is a struct field; each MyData value will have one
-    public var a: Int;
+    var a: Int;
 
-    public static function staticMethod() {
+    static function staticMethod() {
         // this function does *not* take an instance of MyData
     }
 }
@@ -309,13 +311,13 @@ struct MyStruct {
     var field1: Int;
     var field2: Float;
 
-    public function method1() {}
+    function method1() {}
 }
 
 extend MyStruct {
     var field3: CString;
 
-    public function method2() {}
+    function method2() {}
 }
 ~~~
 
@@ -400,7 +402,7 @@ struct MyStruct {
     var field1: Int;
     var field2: Float;
 
-    public function myMethod() {
+    function myMethod() {
         printf("%i", this.field1);
     }
 }
@@ -640,7 +642,7 @@ Static dispatch to trait implementation methods is possible using the name of th
 
 ~~~kit
 implement MyTrait for Int {
-    public function exclaim() {
+    function exclaim() {
         printf("hello from %i\n", this);
     }
 }
@@ -743,7 +745,7 @@ An example is `Iterable`:
 ~~~kit
 // note parens instead of brackets
 trait Iterable(IteratorT) {
-    public function iterator(): Box[Iterator[IteratorT]];
+    function iterator(): Box[Iterator[IteratorT]];
 }
 ~~~
 
@@ -751,7 +753,7 @@ trait Iterable(IteratorT) {
 
 ~~~kit
 implement Iterable(Int) for MyList[Int] {
-    public function iterator(): Box[Iterator[Int]] {
+    function iterator(): Box[Iterator[Int]] {
         // ...
     }
 }
@@ -1164,7 +1166,7 @@ This trait has one associated type, which is the type of values produced by the 
 
 ~~~kit
 trait Iterator[T] {
-    public function next(): (Box[Iterator[T]], Option[T]);
+    function next(): (Box[Iterator[T]], Option[T]);
 }
 ~~~
 

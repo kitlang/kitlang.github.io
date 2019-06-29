@@ -1,0 +1,76 @@
+---
+title: Playground
+layout: default
+---
+
+<h3>Playground</h3>
+
+<p>
+    Enter some simple Kit code here. The result will be compiled to JavaScript
+    via Emscripten, then run in your browser. (<a href="examples.html">See
+    here for some ideas</a>.)
+</p>
+
+<pre contenteditable id="source">
+struct Greeting {
+    var firstWord: CString = "Hello";
+    var secondWord: CString = "you";
+}
+
+function main() {
+    var greeting = struct Greeting { secondWord: "world" };
+    printf("%s, %s!", greeting.firstWord, greeting.secondWord);
+}
+
+
+</pre>
+
+<div style="height: 50px;">
+    <button id="compile-button" type="button"><i class="fas fa-code"></i> Compile + Run</button>
+    <img id="loading" src="{{ "/assets/img/loading.gif" | relative_url }}" alt="loading" style="width: 60px; height: 50px"/>
+</div>
+
+<br/>
+
+<div id="compile-output">
+    <pre>(Output will be shown here)</pre>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#loading').hide();
+        $('#compile-button').click(function() {
+            var source = $('#source').text();
+            $('#loading').show();
+            $('#compile-button').hide();
+            $.ajax({
+                type: 'POST',
+                url: '{{ site.playground.url }}',
+                data: source,
+                contentType: 'text/plain',
+                dataType: 'text',
+                success: function (result) {
+                    var txt = '';
+                    var _old = console.log;
+                    try {
+                        console.log = function(s) {
+                            txt += s + '<br/>';
+                        }
+                        eval(result);
+                    } catch (e) {
+                        txt = e.toString().replace('\n', '<br/>');
+                    }
+                    console.log = _old;
+                    $('#compile-output').html('<pre>' + txt + '</pre>');
+                    $('#loading').hide();
+                    $('#compile-button').show();
+                },
+                error: function (e) {
+                    $('#compile-output').html('<pre>' + (e.responseText || e.statusText).replace('\n', '<br/>') + '</pre>');
+                    $('#loading').hide();
+                    $('#compile-button').show();
+                }
+            });
+        });
+    });
+</script>

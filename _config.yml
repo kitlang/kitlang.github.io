@@ -15,3 +15,5 @@ trello:
   url: https://trello.com/b/Bn9H0fzk/kit
 blog:
   url: https://blog.kitlang.org
+playground:
+  url: https://playground-server.kitlang.org/compile
